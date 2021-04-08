@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Version: PB-008
+Version: 008
 Created on Tue Mar  3 12:56:56 2020
 @author: Simba_Lin
 @Class: ReDoPlot.show(self, x1, y1)
@@ -9,12 +9,20 @@ Created on Tue Mar  3 12:56:56 2020
 @Function: FindOutput(inp_list, out_list, inp_target)
 @Function: FixCsvErro('Csv Direction')
 @Function: Get720CsvList()
+@Function: Filter_data(dsg_csv)
+@Function: CaculateTimeSec(time1,time2)
+@Function: Interpolation(x1,xn,x2,y1,y2)
+@Function: MovingAvg(data,distance)
+@Function: ResolutionRange(data,length)
 """
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
 import numpy as np
 from dateutil.parser import parse
+from plotly.offline import plot
+import plotly.graph_objects as go
+import plotly.express as px
 
 ############################################################
 #'''detect(Target Data,Whether "00XX" is sure(00 is sure))'''
@@ -140,8 +148,7 @@ def FlagFilter_diff(input_csv_name,output_name,flag_colum):
         i = i + 1
         if (i == len(input_df)-1):
             loop_bo = False
-    input_df.to_csv(output_name,index=0)
-    
+    input_df.to_csv(output_name,index=0)    
 
 ############################################################
 #Get 720L data direction list
@@ -187,7 +194,7 @@ def FindOutput(inp_list, out_list, inp_target):
         if((inp_target <= inp_list[i+1]) == (inp_target >= inp_list[i])):
             return(out_list[i])
         i = i + 1
-    return()
+    return()      
 
 ############################################################
 #'''Return Time List'''
@@ -203,7 +210,53 @@ def DateToSecond(inp_list):
     return(out_list)
     
 
+#'''Create new clean file'''
+def Filter_data(dsg_csv):    
+    print('**********Filter information*************')
+    print('Load file: ',dsg_csv)
+    Processed_dsg_csv = 'Processed_' + dsg_csv
+    #Data filter, save as Processed_dsg_csv
+    FixCsvErro(dsg_csv)
+    ValueFilter_shoc(dsg_csv,Processed_dsg_csv,'VCELL_Min',200)
+    ValueFilter_shoc(Processed_dsg_csv,Processed_dsg_csv,'ReservedCapacityCounter',50)
+    FlagFilter_diff(Processed_dsg_csv,Processed_dsg_csv,'Battery Status')
+    return(Processed_dsg_csv)
 ############################################################
+#'''Caculate delta time'''
+def CaculateTimeSec(time1,time2):    
+    timedelta = parse(time2) - parse(time1)
+    timedelta_sec = timedelta.total_seconds()
+    return(timedelta_sec)
+############################################################
+#Interpolation output yn
+def Interpolation(x1,xn,x2,y1,y2):
+    yn = y1 + (xn - x1) * ((y2 - y1)/(x2 - x1))
+    return yn
+#############################################################
+#Moving Average
+def MovingAvg(data,distance):
+    data_output = []
+    for i in range(len(data)):
+        if(i < distance):
+            continue
+        data_output.append(np.mean(data[i-distance:i]))            
+    return data_output
+#############################################################
+#Resolution data in length Range
+def ResolutionRange(data,length):
+    data_out = []
+    data_len = len(data)
+    
+    for i in range(length):
+        xn = i/(length-1)
+        for j in range(data_len):
+            x1 = j/(data_len-1)
+            x2 = (j+1)/(data_len-1)
+            if(xn >= x1 and xn <= x2):
+                break               
+        data_out.append(Interpolation(x1,xn,x2,data[j],data[j+1]))      
+    return data_out
+#############################################################
 #'''example main'''
 '''
 RangeFilColu_str = 'Relative State Of Charge'
