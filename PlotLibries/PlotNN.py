@@ -100,3 +100,6 @@ class DrawNN():
         for l in self.neural_network:
             network.add_layer(l)
         network.draw()
+        
+network = DrawNN( [2,8,8,1] )
+network.draw()
