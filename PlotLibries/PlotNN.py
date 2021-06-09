@@ -92,13 +92,13 @@ class NeuralNetwork():
             layer.draw( i )            
 
 class DrawNN():
-    def __init__( self, neural_network, ValueList ):
-        self.neural_network = neural_network
-        self.ValueList = ValueList
-        
+    def __init__( self, ValueList ):
+        self.neural_network = []
+        self.ValueList = ValueList        
         self.MaxValue = 0
         self.MinValue = 3
         for layer in range(len(ValueList)):
+            self.neural_network.append(len(ValueList[layer]))
             for node in range(len(ValueList[layer])):
                 if((ValueList[layer][node]) < self.MinValue):
                     self.MinValue = ValueList[layer][node]
@@ -135,5 +135,5 @@ ValueList = [random.sample(range(0, 100), 2),
              random.sample(range(0, 100), 8),
              random.sample(range(0, 100), 6),
              random.sample(range(0, 100), 1)]
-network = DrawNN( [2,8,6,1], ValueList )
+network = DrawNN( ValueList )
 network.draw()
