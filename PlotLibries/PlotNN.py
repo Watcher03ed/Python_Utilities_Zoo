@@ -1,6 +1,7 @@
 from matplotlib import pyplot
 from math import cos, sin, atan
 import random
+import numpy as np
 
 class Neuron():
     def __init__(self, x, y, color_of_neuron):
@@ -91,40 +92,48 @@ class NeuralNetwork():
             layer.draw( i )            
 
 class DrawNN():
-    def __init__( self, neural_network, ColorList ):
+    def __init__( self, neural_network, ValueList ):
         self.neural_network = neural_network
-        self.ColorList = ColorList
+        self.ValueList = ValueList
+        
+        self.MaxValue = 0
+        self.MinValue = 3
+        for layer in range(len(ValueList)):
+            for node in range(len(ValueList[layer])):
+                if((ValueList[layer][node]) < self.MinValue):
+                    self.MinValue = ValueList[layer][node]
+                if((ValueList[layer][node]) > self.MaxValue):
+                    self.MaxValue = ValueList[layer][node]                    
+        
+        self.ColorList = ValueList
+        for layer in range(len(self.ColorList)):
+            for node in range(len(self.ColorList[layer])):
+                color = self.ColorList[layer][node]/self.MaxValue
+                self.ColorList[layer][node] = [1,0,0,color]                
 
     def draw( self ):
+                    
         widest_layer = max( self.neural_network )
         network = NeuralNetwork( widest_layer )
         for l,clr in zip(self.neural_network,self.ColorList):
             network.add_layer(l,clr)
         network.draw()
         
-        MaxValue = 0
-        MinValue = 3
-        for layer in range(len(ColorList)):
-            for node in range(len(ColorList[layer])):
-                if((ColorList[layer][node][0]) < MinValue):
-                    MinValue = ColorList[layer][node][0]
-                if((ColorList[layer][node][0]) > MaxValue):
-                    MaxValue = ColorList[layer][node][0]
         
         pyplot.text(-6, -2.2, "Maxium", fontsize = 10)
-        pyplot.gca().add_patch(pyplot.Circle((-4, -3), radius=0.5, fill=True, color = [MaxValue,0.7,0.7]))
-        pyplot.text(-5, -4.3, str(ColorList[0][0][0])[0:4], fontsize = 10)        
+        pyplot.gca().add_patch(pyplot.Circle((-4, -3), radius=0.5, fill=True, color = [1,0,0,self.MaxValue/self.MaxValue]))
+        pyplot.text(-5, -4.3, str(self.MaxValue)[0:4], fontsize = 10)        
         pyplot.text(2, -2.2, "Minium", fontsize = 10)
-        pyplot.gca().add_patch(pyplot.Circle((3, -3), radius=0.5, fill=True, color = [MinValue,0.7,0.7]))
-        pyplot.text(2, -4.3, str(ColorList[1][0][0])[0:4], fontsize = 10)
+        pyplot.gca().add_patch(pyplot.Circle((3, -3), radius=0.5, fill=True, color = [1,0,0,self.MinValue/self.MaxValue]))
+        pyplot.text(2, -4.3, str(self.MinValue)[0:4], fontsize = 10)
         pyplot.axis('scaled')
         pyplot.axis('off')
         pyplot.title( 'Neural Network architecture', fontsize=15 )
         pyplot.show()
         
-ColorList = [[[random.random(),0.7,0.7]]*2,
-             [[random.random(),0.7,0.7]]*8,
-             [[random.random(),0.7,0.7]]*6,
-             [[random.random(),0.7,0.7]]*1]
-network = DrawNN( [2,8,6,1], ColorList )
+ValueList = [random.sample(range(0, 100), 2),
+             random.sample(range(0, 100), 8),
+             random.sample(range(0, 100), 6),
+             random.sample(range(0, 100), 1)]
+network = DrawNN( [2,8,6,1], ValueList )
 network.draw()
